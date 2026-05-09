@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Copy Filtrado · CM Publicidad Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0f;
+    --surface: #141418;
+    --surface2: #1c1c22;
+    --border: #2a2a33;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0ede8;
+    --muted: #7a7885;
+    --muted2: #4a4855;
+    --green: #4ade80;
+    --red: #ff6b6b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 1;
+    padding: 48px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .header-left { max-width: 560px; }
+  .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .header-sub {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+  .header-badge {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .badge-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .badge-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* LAYOUT */
+  .app {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: calc(100vh - 160px);
+  }
+
+  /* FORM PANEL */
+  .panel-form {
+    padding: 36px 40px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* FORM GROUPS */
+  .form-group { margin-bottom: 22px; }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  label span { color: var(--accent); margin-left: 2px; }
+
+  input[type="text"], textarea, select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: none;
+    appearance: none;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,255,71,0.08);
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted2); }
+  select option { background: var(--surface2); }
+
+  /* TONE SELECTOR */
+  .tone-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .tone-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--muted);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+  }
+  .tone-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tone-btn.active {
+    border-color: var(--accent);
+    background: rgba(232,255,71,0.08);
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .tone-icon { margin-right: 6px; }
+
+  /* FILTER TOGGLES */
+  .filter-group { display: flex; flex-direction: column; gap: 10px; }
+  .filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .filter-toggle:hover { border-color: var(--muted2); }
+  .filter-toggle.active {
+    border-color: var(--accent);
+    background: rgba(232,255,71,0.06);
+  }
+  .toggle-check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--muted2);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-size: 11px;
+  }
+  .filter-toggle.active .toggle-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+  .toggle-text { font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .filter-toggle.active .toggle-text { color: var(--text); }
+
+  /* GENERATE BUTTON */
+  .generate-btn {
+    width: 100%;
+    margin-top: 28px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .generate-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,255,71,0.2); }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .generate-btn .btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top-color: var(--bg);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .generate-btn.loading .spinner { display: block; }
+  .generate-btn.loading .btn-text { display: none; }
+
+  /* OUTPUT PANEL */
+  .panel-output {
+    padding: 36px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+    opacity: 0.4;
+  }
+  .empty-icon {
+    font-size: 48px;
+    filter: grayscale(1);
+  }
+  .empty-text {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 260px;
+    line-height: 1.6;
+  }
+
+  /* COPY VARIANTS */
+  .variants-container { display: none; flex-direction: column; gap: 24px; }
+  .variants-container.visible { display: flex; }
+
+  .variant-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease forwards;
+    opacity: 0;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .variant-card:nth-child(2) { animation-delay: 0.1s; }
+  .variant-card:nth-child(3) { animation-delay: 0.2s; }
+
+  .variant-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .variant-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .variant-label.v1 { color: var(--accent); }
+  .variant-label.v2 { color: var(--accent2); }
+  .variant-label.v3 { color: #a78bfa; }
+
+  .variant-strategy {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Instrument Sans', sans-serif;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+  .variant-body {
+    padding: 18px 18px 20px;
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    font-weight: 300;
+  }
+
+  /* FILTER ANALYSIS */
+  .filter-analysis {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 4px;
+  }
+  .filter-analysis-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .filter-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filter-tag {
+    background: rgba(74,222,128,0.1);
+    border: 1px solid rgba(74,222,128,0.25);
+    border-radius: 100px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* CTA + DESCRIPTION SECTION */
+  .extras-section {
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    margin-top: 2px;
+  }
+  .extras-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .extra-block {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .extra-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .extra-text {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .extra-copy-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'Instrument Sans', sans-serif;
+    transition: color 0.15s;
+  }
+  .extra-copy-btn:hover { color: var(--accent); }
+  .extra-copy-btn.copied { color: var(--green); }
+
+  /* REGENERATE */
+  .regen-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 0;
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+  .regen-bar.visible { display: flex; }
+  .regen-hint { font-size: 12px; color: var(--muted); }
+  .regen-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .regen-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    header { padding: 32px 20px 28px; }
+    .app { grid-template-columns: 1fr; }
+    .panel-form { border-right: none; border-bottom: 1px solid var(--border); padding: 28px 20px; }
+    .panel-output { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="tag">CM Publicidad Digital · Herramienta interna</div>
+    <h1>Generador de Copy<br>con <em>Filtro de Prospectos</em></h1>
+    <p class="header-sub">Completá los datos del cliente y el servicio. La IA genera 3 versiones de copy con filtros incorporados, más el texto del botón CTA y la descripción secundaria lista para pegar en Meta Ads.</p>
+  </div>
+  <div class="header-badge">
+    <div class="badge-num">3×3</div>
+    <div class="badge-label">copy + CTA<br>+ descripción</div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- FORM PANEL -->
+  <div class="panel-form">
+    <div class="panel-title">Datos del anuncio</div>
+
+    <div class="form-group">
+      <label>Rubro / Tipo de negocio <span>*</span></label>
+      <input type="text" id="rubro" placeholder="ej: viandas saludables, peluquería, odontología...">
+    </div>
+
+    <div class="form-group">
+      <label>Servicio o producto a publicitar <span>*</span></label>
+      <input type="text" id="servicio" placeholder="ej: pack semanal de viandas, turno de coloración, implantes dentales...">
+    </div>
+
+    <div class="form-group">
+      <label>Beneficio principal / Transformación <span>*</span></label>
+      <input type="text" id="beneficio" placeholder="ej: comer sano sin cocinar, cambiar tu look, sonreír sin vergüenza...">
+    </div>
+
+    <div class="form-group">
+      <label>Precio o rango de precio</label>
+      <input type="text" id="precio" placeholder="ej: desde $15.000, consulta desde $8.000...">
+    </div>
+
+    <div class="form-group">
+      <label>Zona geográfica</label>
+      <input type="text" id="zona" placeholder="ej: CABA, Rosario, zona norte GBA...">
+    </div>
+
+    <div class="form-group">
+      <label>Tono del anuncio</label>
+      <div class="tone-grid">
+        <button class="tone-btn active" data-tone="directo"><span class="tone-icon">⚡</span>Directo</button>
+        <button class="tone-btn" data-tone="emocional"><span class="tone-icon">❤️</span>Emocional</button>
+        <button class="tone-btn" data-tone="urgente"><span class="tone-icon">🔥</span>Urgente</button>
+        <button class="tone-btn" data-tone="aspiracional"><span class="tone-icon">✨</span>Aspiracional</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Filtros a incluir en el copy <span>*</span></label>
+      <div class="filter-group">
+        <div class="filter-toggle active" data-filter="ubicacion">
+          <div class="toggle-check">✓</div>
+          <div class="toggle-text"><strong>Ubicación específica</strong> — Solo para personas en [zona]. Filtra a quienes están lejos y no pueden comprar.</div>
+        </div>
+        <div class="filter-toggle active" data-filter="presupuesto">
+          <div class="toggle-check">✓</div>
+          <div class="toggle-text"><strong>Mención de precio</strong> — Muestra el precio o rango para disuadir a quienes no pueden pagar.</div>
+        </div>
+        <div class="filter-toggle active" data-filter="perfil">
+          <div class="toggle-check">✓</div>
+          <div class="toggle-text"><strong>Perfil del cliente ideal</strong> — Describe explícitamente a quién está dirigido. El resto se autoexcluye.</div>
+        </div>
+        <div class="filter-toggle" data-filter="accion">
+          <div class="toggle-check">✓</div>
+          <div class="toggle-text"><strong>Acción concreta requerida</strong> — Pide algo específico (tener cuenta activa, tener negocio propio, etc.) antes de contactar.</div>
+        </div>
+        <div class="filter-toggle" data-filter="escasez">
+          <div class="toggle-check">✓</div>
+          <div class="toggle-text"><strong>Escasez real</strong> — Cupos o disponibilidad limitada. Elimina a quienes "lo van a pensar".</div>
+        </div>
+        <div class="filter-toggle" data-filter="compromiso">
+          <div class="toggle-check">✓</div>
+          <div class="toggle-text"><strong>Micro-compromiso</strong> — CTA que implica un pequeño esfuerzo. Solo quien tiene interés real lo completa.</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generateCopy()">
+      <div class="btn-inner">
+        <div class="spinner"></div>
+        <span class="btn-text">⚡ Generar copy filtrado</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- OUTPUT PANEL -->
+  <div class="panel-output">
+    <div class="panel-title">Copy generado</div>
+
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">🎯</div>
+      <div class="empty-text">Completá los datos del anuncio y generá tu copy con filtros incorporados.</div>
+    </div>
+
+    <div class="variants-container" id="variantsContainer">
+      <!-- Se genera dinámicamente -->
+    </div>
+
+    <div class="filter-analysis" id="filterAnalysis" style="display:none; margin-top: 20px;">
+      <div class="filter-analysis-title">✅ Filtros incorporados en este copy</div>
+      <div class="filter-tags" id="filterTags"></div>
+    </div>
+
+    <div class="regen-bar" id="regenBar">
+      <div class="regen-hint">¿No te convenció? Regenerá con los mismos datos.</div>
+      <button class="regen-btn" onclick="generateCopy()">↻ Regenerar</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // TONE SELECTOR
+  document.querySelectorAll('.tone-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // FILTER TOGGLES
+  document.querySelectorAll('.filter-toggle').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('active');
+    });
+  });
+
+  function getActiveFilters() {
+    return [...document.querySelectorAll('.filter-toggle.active')].map(t => t.dataset.filter);
+  }
+
+  function getActiveTone() {
+    return document.querySelector('.tone-btn.active')?.dataset.tone || 'directo';
+  }
+
+  async function generateCopy() {
+    const rubro = document.getElementById('rubro').value.trim();
+    const servicio = document.getElementById('servicio').value.trim();
+    const beneficio = document.getElementById('beneficio').value.trim();
+    const precio = document.getElementById('precio').value.trim();
+    const zona = document.getElementById('zona').value.trim();
+    const tone = getActiveTone();
+    const filters = getActiveFilters();
+
+    if (!rubro || !servicio || !beneficio) {
+      alert('Completá al menos el rubro, el servicio y el beneficio principal.');
+      return;
+    }
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+
+    const filterDescriptions = {
+      ubicacion: `mencionar explícitamente que es solo para personas en "${zona || 'la zona indicada'}"`,
+      presupuesto: `incluir el precio "${precio || 'a consultar'}" para que quien no puede pagarlo no escriba`,
+      perfil: `describir con precisión quién es el cliente ideal (quién SÍ debería escribir)`,
+      accion: `pedir que quien escribe cumpla una condición concreta antes de contactar`,
+      escasez: `mencionar cupos o disponibilidad limitada de forma creíble`,
+      compromiso: `usar un CTA que requiera un pequeño esfuerzo, no solo "escribinos"`,
+    };
+
+    const activeFilterText = filters.map(f => filterDescriptions[f]).filter(Boolean).join('; ');
+
+    const toneGuide = {
+      directo: 'tono directo, claro, sin rodeos, orientado a la acción',
+      emocional: 'tono emocional, conecta con el dolor o deseo profundo del cliente',
+      urgente: 'tono urgente, crea presión positiva y sensación de oportunidad que se va',
+      aspiracional: 'tono aspiracional, pinta la vida del cliente después de usar el producto/servicio',
+    };
+
+    const prompt = `Sos un experto en copywriting para Meta Ads (Facebook e Instagram) orientado al mercado argentino.
+
+Tu tarea es generar 3 versiones distintas de copy para un anuncio publicitario, con la característica especial de que cada versión debe incluir FILTROS DE PROSPECTO incorporados en el texto. El objetivo es que solo las personas con intención real de compra se sientan interpeladas y escriban.
+
+DATOS DEL ANUNCIO:
+- Rubro: ${rubro}
+- Servicio/Producto: ${servicio}
+- Beneficio principal / Transformación: ${beneficio}
+- Precio: ${precio || 'no especificado'}
+- Zona: ${zona || 'no especificada'}
+- Tono: ${toneGuide[tone]}
+
+FILTROS QUE DEBÉS INCORPORAR EN EL COPY:
+${activeFilterText || 'incluí al menos un perfil de cliente ideal y una acción concreta'}
+
+REGLAS DE ORO para cada versión:
+1. El copy debe CALIFICAR al lector: que quien no cumple el perfil sienta que no es para él
+2. Nunca usar "gratis", "sin costo" ni promesas vagas — atraen curiosos sin presupuesto
+3. El CTA debe ser específico y requerir una mínima intención (no solo "escribinos")
+4. Máximo 150 palabras por versión
+5. Usar lenguaje argentino natural, con vos/ustedes según corresponda
+6. Incluir emojis estratégicamente (no más de 3-4 por versión)
+7. Cada versión debe usar una ESTRATEGIA diferente de filtrado
+
+FORMATO DE RESPUESTA (exacto, sin nada más):
+---VARIANTE_1---
+[Estrategia: nombre de la estrategia usada, en 4-6 palabras]
+[Copy principal aquí]
+[CTA: texto del botón de llamada a la acción, máximo 5 palabras, sin comillas]
+[DESC: descripción secundaria del anuncio, 1-2 oraciones que complementan el copy principal y refuerzan el filtro]
+
+---VARIANTE_2---
+[Estrategia: nombre de la estrategia usada, en 4-6 palabras]
+[Copy principal aquí]
+[CTA: texto del botón de llamada a la acción, máximo 5 palabras, sin comillas]
+[DESC: descripción secundaria del anuncio, 1-2 oraciones que complementan el copy principal y refuerzan el filtro]
+
+---VARIANTE_3---
+[Estrategia: nombre de la estrategia usada, en 4-6 palabras]
+[Copy principal aquí]
+[CTA: texto del botón de llamada a la acción, máximo 5 palabras, sin comillas]
+[DESC: descripción secundaria del anuncio, 1-2 oraciones que complementan el copy principal y refuerzan el filtro]
+
+No agregues ningún texto antes ni después de las variantes.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content?.[0]?.text || '';
+      parseAndRender(text, filters);
+
+    } catch (err) {
+      console.error(err);
+      alert('Hubo un error al generar el copy. Intentá de nuevo.');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+    }
+  }
+
+  function parseAndRender(text, filters) {
+    const parts = text.split(/---VARIANTE_\d+---/).filter(p => p.trim());
+    if (parts.length === 0) return;
+
+    const container = document.getElementById('variantsContainer');
+    const emptyState = document.getElementById('emptyState');
+    const filterAnalysis = document.getElementById('filterAnalysis');
+    const filterTags = document.getElementById('filterTags');
+    const regenBar = document.getElementById('regenBar');
+
+    emptyState.style.display = 'none';
+    container.innerHTML = '';
+    container.classList.add('visible');
+
+    const colors = ['v1', 'v2', 'v3'];
+    const labels = ['Variante A', 'Variante B', 'Variante C'];
+
+    parts.forEach((part, i) => {
+      const lines = part.trim().split('\n');
+      let strategy = '';
+      let ctaText = '';
+      let descText = '';
+      let copyLines = [];
+
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('[Estrategia:')) {
+          strategy = trimmed.replace('[Estrategia:', '').replace(']', '').trim();
+        } else if (trimmed.startsWith('[CTA:')) {
+          ctaText = trimmed.replace('[CTA:', '').replace(']', '').trim();
+        } else if (trimmed.startsWith('[DESC:')) {
+          descText = trimmed.replace('[DESC:', '').replace(']', '').trim();
+        } else {
+          copyLines.push(line);
+        }
+      });
+
+      const copyText = copyLines.join('\n').trim();
+
+      const extrasHtml = (ctaText || descText) ? `
+        <div class="extras-section">
+          <div class="extras-grid">
+            ${ctaText ? `
+            <div class="extra-block">
+              <div class="extra-label">
+                🔘 Botón CTA
+                <button class="extra-copy-btn" onclick="copyExtraText(this, ${JSON.stringify(ctaText)})">Copiar</button>
+              </div>
+              <div class="extra-text">${escapeHtml(ctaText)}</div>
+            </div>` : ''}
+            ${descText ? `
+            <div class="extra-block" style="${!ctaText ? 'grid-column: 1/-1;' : ''}">
+              <div class="extra-label">
+                📝 Descripción secundaria
+                <button class="extra-copy-btn" onclick="copyExtraText(this, ${JSON.stringify(descText)})">Copiar</button>
+              </div>
+              <div class="extra-text">${escapeHtml(descText)}</div>
+            </div>` : ''}
+          </div>
+        </div>` : '';
+
+      const card = document.createElement('div');
+      card.className = 'variant-card';
+      card.innerHTML = `
+        <div class="variant-header">
+          <div>
+            <div class="variant-label ${colors[i] || 'v1'}">${labels[i] || 'Variante'}</div>
+            ${strategy ? `<div class="variant-strategy">${strategy}</div>` : ''}
+          </div>
+          <button class="copy-btn" onclick="copyText(this, ${JSON.stringify(copyText)})">Copiar copy</button>
+        </div>
+        <div class="variant-body">${escapeHtml(copyText)}</div>
+        ${extrasHtml}
+      `;
+      container.appendChild(card);
+    });
+
+    // FILTER TAGS
+    const filterNames = {
+      ubicacion: '📍 Filtro de zona',
+      presupuesto: '💰 Precio visible',
+      perfil: '🎯 Perfil de cliente',
+      accion: '✋ Condición previa',
+      escasez: '⏳ Escasez',
+      compromiso: '🔗 Micro-compromiso',
+    };
+
+    filterTags.innerHTML = filters.map(f => `<div class="filter-tag">${filterNames[f] || f}</div>`).join('');
+    filterAnalysis.style.display = 'block';
+    regenBar.classList.add('visible');
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  async function copyExtraText(btn, text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copiar';
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch {
+      btn.textContent = 'Error';
+    }
+  }
+
+  async function copyText(btn, text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copiar';
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch {
+      btn.textContent = 'Error';
+    }
+  }
+</script>
+</body>
+</html>
